@@ -17,6 +17,8 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 part 'video_store.g.dart';
 
+const MethodChannel _audioChannel = MethodChannel('com.frosty.app/audio');
+
 class VideoStore = VideoStoreBase with _$VideoStore;
 
 abstract class VideoStoreBase with Store {
@@ -202,6 +204,14 @@ abstract class VideoStoreBase with Store {
     updateStreamInfo();
   }
 
+  Future<void> requestAudioFocus() async {
+    try {
+      await _audioChannel.invokeMethod('requestAudioFocus');
+    } catch (e) {
+      debugPrint('Failed to request audio focus: $e');
+    }
+  }
+
   @action
   Future<void> updateStreamQualities() async {
     try {
@@ -332,6 +342,8 @@ abstract class VideoStoreBase with Store {
   /// Initializes the video webview.
   @action
   Future<void> initVideo() async {
+    await requestAudioFocus(); 
+    
     if (await videoWebViewController.currentUrl() == videoUrl) {
       // Declare `window` level utility methods and add event listeners to notify the JavaScript channels when the video plays and pauses.
       try {
